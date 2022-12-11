@@ -1,8 +1,8 @@
-import React from "react";
 import { Formik } from "formik";
 import axios from "axios";
+import { toast } from "react-toastify";
 
-const Form = () => {
+const Form = ({ setResult }) => {
   return (
     <div>
       <h1>QR-code generator</h1>
@@ -23,11 +23,34 @@ const Form = () => {
           }
           return errors;
         }}
-        onSubmit={async (values) => {
-          console.log(values);
-          let res = await axios.get(
-            `https://api.happi.dev/v1/qrcode?data=${values.data}&width=${values.width}&dots=${values.dots}&bg=${values.bg}&apikey=d289f0hWuYeUWAeLAVCj7T9TACNxkPbDXLbxpuJLoBBXHngD6uBJ1Msx`
-          );
+        onSubmit={async (values, { resetForm }) => {
+          const { data, width, bg, dots } = values;
+          try {
+            let res = await axios.get(`https://api.happi.dev/v1/qrcode`, {
+              params: {
+                data: data,
+                width: width,
+                dots: dots.slice(1),
+                bg: bg.slice(1),
+                apikey:
+                  "d289f0hWuYeUWAeLAVCj7T9TACNxkPbDXLbxpuJLoBBXHngD6uBJ1Msx",
+              },
+            });
+
+            if (res.data.success) {
+              setResult(res.data);
+              resetForm();
+              toast.success("QR-code generated", {
+                position: "top-right",
+                theme: "colored",
+              });
+            }
+          } catch (error) {
+            toast.error("Something went wrong", {
+              position: "top-right",
+              theme: "colored",
+            });
+          }
         }}
       >
         {({
